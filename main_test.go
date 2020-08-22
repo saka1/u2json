@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestConvert(t *testing.T) {
+func TestBasic(t *testing.T) {
 	js := convert("https://example.com:80/foo/bar?q1=v1&q2=v2&q3&q2=v3#fr")
 	var dat map[string]interface{}
 	err := json.Unmarshal(js, &dat)
@@ -42,5 +42,21 @@ func TestConvert(t *testing.T) {
 	}
 	if queryParams["q3"].(string) != "" {
 		t.Error(queryParams["q3"])
+	}
+}
+
+func TestSimpleUrl(t *testing.T) {
+	js := convert("https://example.com/")
+	var dat map[string]interface{}
+	err := json.Unmarshal(js, &dat)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf("%v", dat)
+	if dat["host"] != "example.com" {
+		t.Error(dat["host"])
+	}
+	if dat["path"] != "/" {
+		t.Error(dat["path"])
 	}
 }

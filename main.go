@@ -15,11 +15,13 @@ func convert(input string) []byte {
 		log.Fatal(err)
 	}
 	result := map[string]interface{}{
-		"scheme":   u.Scheme,
-		"host":     u.Hostname(),
-		"path":     u.Path,
-		"fragment": u.Fragment,
-		"rawQuery": u.RawQuery,
+		"scheme": u.Scheme,
+		"host":   u.Hostname(),
+		"path":   u.Path,
+	}
+	// fragment
+	if u.Fragment != "" {
+		result["fragment"] = u.Fragment
 	}
 	// port
 	if u.Port() != "" {
@@ -30,14 +32,19 @@ func convert(input string) []byte {
 		result["port"] = port
 	}
 	// query
-	queryKv := map[string]string{}
-	for k, v := range u.Query() {
-		// Last key wins in current implementation
-		// But another strategy may be useful
-		// SEE: https://stackoverflow.com/a/1746566
-		queryKv[k] = v[len(v)-1]
+	if u.RawQuery != "" {
+		result["rawQuery"] = u.RawQuery
 	}
-	result["query"] = queryKv
+	if u.RawQuery != "" {
+		queryKv := map[string]string{}
+		for k, v := range u.Query() {
+			// Last key wins in current implementation
+			// But another strategy may be useful
+			// SEE: https://stackoverflow.com/a/1746566
+			queryKv[k] = v[len(v)-1]
+		}
+		result["query"] = queryKv
+	}
 
 	bin, err := json.Marshal(&result)
 	if err != nil {
