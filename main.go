@@ -9,37 +9,45 @@ import (
 	"strconv"
 )
 
-type res struct {
-	Scheme      string `json:"scheme"`
-	Hostname    string `json:"host"`
-	Port        int    `json:"port"`
-	EscapedPath string `json:"path"`
-}
-
 func convert(input string) []byte {
-	u, err := url.ParseRequestURI(input)
+	u, err := url.Parse(input)
 	if err != nil {
 		log.Fatal(err)
 	}
-	port, err := strconv.Atoi(u.Port())
+	result := map[string]interface{}{
+		"scheme":   u.Scheme,
+		"host":     u.Hostname(),
+		"path":     u.Path,
+		"fragment": u.Fragment,
+		"rawQuery": u.RawQuery,
+	}
+	// port
+	if u.Port() != "" {
+		port, err := strconv.Atoi(u.Port())
+		if err != nil {
+			log.Fatal(err)
+		}
+		result["port"] = port
+	}
+	// query
+	queryKv := map[string]string{}
+	for k, v := range u.Query() {
+		// Last key wins in current implementation
+		// But another strategy may be useful
+		// SEE: https://stackoverflow.com/a/1746566
+		queryKv[k] = v[len(v)-1]
+	}
+	result["query"] = queryKv
+
+	bin, err := json.Marshal(&result)
 	if err != nil {
 		log.Fatal(err)
 	}
-	res := res{
-		Scheme:      u.Scheme,
-		Hostname:    u.Hostname(),
-		Port:        port,
-		EscapedPath: u.EscapedPath(),
-	}
-	m, err := json.Marshal(&res)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return m
+	return bin
 }
 
 func main() {
+	//TODO handle empty args
 	input := os.Args[1]
-
 	fmt.Print(string(convert(input)))
 }
