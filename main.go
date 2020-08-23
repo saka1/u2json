@@ -1,60 +1,24 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"net/url"
 	"os"
-	"strconv"
+
+	"github.com/spf13/cobra"
 )
 
-func convert(input string) []byte {
-	u, err := url.Parse(input)
-	if err != nil {
-		log.Fatal(err)
-	}
-	result := map[string]interface{}{
-		"scheme": u.Scheme,
-		"host":   u.Hostname(),
-		"path":   u.Path,
-	}
-	// fragment
-	if u.Fragment != "" {
-		result["fragment"] = u.Fragment
-	}
-	// port
-	if u.Port() != "" {
-		port, err := strconv.Atoi(u.Port())
-		if err != nil {
-			log.Fatal(err)
-		}
-		result["port"] = port
-	}
-	// query
-	if u.RawQuery != "" {
-		result["rawQuery"] = u.RawQuery
-	}
-	if u.RawQuery != "" {
-		queryKv := map[string]string{}
-		for k, v := range u.Query() {
-			// Last key wins in current implementation
-			// But another strategy may be useful
-			// SEE: https://stackoverflow.com/a/1746566
-			queryKv[k] = v[len(v)-1]
-		}
-		result["query"] = queryKv
-	}
-
-	bin, err := json.Marshal(&result)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return bin
+var rootCmd = &cobra.Command{
+	Use:   "u2json",
+	Short: "Convert URL to JSON",
+	Args:  cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Print(string(convert(args[0])))
+	},
 }
 
 func main() {
-	//TODO handle empty args
-	input := os.Args[1]
-	fmt.Print(string(convert(input)))
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }

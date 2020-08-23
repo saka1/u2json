@@ -60,3 +60,13 @@ func TestSimpleUrl(t *testing.T) {
 		t.Error(dat["path"])
 	}
 }
+
+func TestLargePort(t *testing.T) {
+	js := convert("http://example.com:65536")
+	var dat map[string]interface{}
+	json.Unmarshal(js, &dat)
+	t.Logf("%v", dat)
+	if dat["port"].(float64) != 65536 {
+		t.Error(dat["port"])
+	}
+}
