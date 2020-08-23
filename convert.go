@@ -12,14 +12,14 @@ func convert(input string) []byte {
 	if err != nil {
 		log.Fatal(err)
 	}
-	result := map[string]interface{}{
-		"scheme": u.Scheme,
-		"host":   u.Hostname(),
-		"path":   u.Path,
+	result := map[string]interface{}{}
+	// scheme
+	if u.Scheme != "" {
+		result["scheme"] = u.Scheme
 	}
-	// fragment
-	if u.Fragment != "" {
-		result["fragment"] = u.Fragment
+	// host
+	if u.Hostname() != "" {
+		result["host"] = u.Hostname()
 	}
 	// port
 	if u.Port() != "" {
@@ -28,6 +28,10 @@ func convert(input string) []byte {
 			log.Fatal(err)
 		}
 		result["port"] = port
+	}
+	// path
+	if u.Path != "" {
+		result["path"] = u.Path
 	}
 	// query
 	if u.RawQuery != "" {
@@ -42,6 +46,10 @@ func convert(input string) []byte {
 			queryKv[k] = v[len(v)-1]
 		}
 		result["query"] = queryKv
+	}
+	// fragment
+	if u.Fragment != "" {
+		result["fragment"] = u.Fragment
 	}
 
 	bin, err := json.Marshal(&result)
