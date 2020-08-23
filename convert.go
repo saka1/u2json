@@ -1,0 +1,52 @@
+package main
+
+import (
+	"encoding/json"
+	"log"
+	"net/url"
+	"strconv"
+)
+
+func convert(input string) []byte {
+	u, err := url.Parse(input)
+	if err != nil {
+		log.Fatal(err)
+	}
+	result := map[string]interface{}{
+		"scheme": u.Scheme,
+		"host":   u.Hostname(),
+		"path":   u.Path,
+	}
+	// fragment
+	if u.Fragment != "" {
+		result["fragment"] = u.Fragment
+	}
+	// port
+	if u.Port() != "" {
+		port, err := strconv.Atoi(u.Port())
+		if err != nil {
+			log.Fatal(err)
+		}
+		result["port"] = port
+	}
+	// query
+	if u.RawQuery != "" {
+		result["rawQuery"] = u.RawQuery
+	}
+	if u.RawQuery != "" {
+		queryKv := map[string]string{}
+		for k, v := range u.Query() {
+			// Last key wins in current implementation
+			// But another strategy may be useful
+			// SEE: https://stackoverflow.com/a/1746566
+			queryKv[k] = v[len(v)-1]
+		}
+		result["query"] = queryKv
+	}
+
+	bin, err := json.Marshal(&result)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return bin
+}
