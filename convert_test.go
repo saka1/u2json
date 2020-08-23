@@ -62,11 +62,24 @@ func TestSimpleUrl(t *testing.T) {
 }
 
 func TestLargePort(t *testing.T) {
-	js := convert("http://example.com:65536")
+	js := convert("https://example.com:65536")
 	var dat map[string]interface{}
 	json.Unmarshal(js, &dat)
 	t.Logf("%v", dat)
 	if dat["port"].(float64) != 65536 {
 		t.Error(dat["port"])
+	}
+}
+
+func TestUserPassword(t *testing.T) {
+	js := convert("https://u:pass@example.com")
+	var dat map[string]interface{}
+	json.Unmarshal(js, &dat)
+	t.Logf("%v", dat)
+	if dat["user"] != "u" {
+		t.Error(dat["user"])
+	}
+	if dat["password"] != "pass" {
+		t.Error(dat["password"])
 	}
 }

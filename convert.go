@@ -17,6 +17,17 @@ func convert(input string) []byte {
 	if u.Scheme != "" {
 		result["scheme"] = u.Scheme
 	}
+	// user
+	if u.User != nil {
+		usr := u.User
+		if usr.Username() != "" {
+			result["user"] = usr.Username()
+		}
+		password, passwordSet := usr.Password()
+		if passwordSet {
+			result["password"] = password
+		}
+	}
 	// host
 	if u.Hostname() != "" {
 		result["host"] = u.Hostname()
