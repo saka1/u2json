@@ -11,9 +11,12 @@ var opt = &convertOpt{
 }
 
 func TestBasic(t *testing.T) {
-	js := convert("https://example.com:80/foo/bar?q1=v1&q2=v2&q3&q2=v3#fr", opt)
+	js, err := convert("https://example.com:80/foo/bar?q1=v1&q2=v2&q3&q2=v3#fr", opt)
+	if err != nil {
+		t.Error(err)
+	}
 	var dat map[string]interface{}
-	err := json.Unmarshal(js, &dat)
+	err = json.Unmarshal(js, &dat)
 	if err != nil {
 		t.Error(err)
 	}
@@ -50,24 +53,11 @@ func TestBasic(t *testing.T) {
 	}
 }
 
-func TestSimpleUrl(t *testing.T) {
-	js := convert("https://example.com/", opt)
-	var dat map[string]interface{}
-	err := json.Unmarshal(js, &dat)
+func TestLargePort(t *testing.T) {
+	js, err := convert("https://example.com:65536", opt)
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("%v", dat)
-	if dat["host"] != "example.com" {
-		t.Error(dat["host"])
-	}
-	if dat["path"] != "/" {
-		t.Error(dat["path"])
-	}
-}
-
-func TestLargePort(t *testing.T) {
-	js := convert("https://example.com:65536", opt)
 	var dat map[string]interface{}
 	json.Unmarshal(js, &dat)
 	t.Logf("%v", dat)
@@ -77,7 +67,10 @@ func TestLargePort(t *testing.T) {
 }
 
 func TestUserPassword(t *testing.T) {
-	js := convert("https://u:pass@example.com", opt)
+	js, err := convert("https://u:pass@example.com", opt)
+	if err != nil {
+		t.Error(err)
+	}
 	var dat map[string]interface{}
 	json.Unmarshal(js, &dat)
 	t.Logf("%v", dat)
@@ -94,7 +87,10 @@ func TestQueryArray(t *testing.T) {
 		enableQueryValueArray: true,
 		enableStrictURL:       false,
 	}
-	js := convert("https://example.com?q1=v1&q2=v2&q3&q2=v3", opt)
+	js, err := convert("https://example.com?q1=v1&q2=v2&q3&q2=v3", opt)
+	if err != nil {
+		t.Error(err)
+	}
 	var dat map[string]interface{}
 	json.Unmarshal(js, &dat)
 	params := dat["query"].(map[string]interface{})
@@ -112,10 +108,13 @@ func TestQueryArray(t *testing.T) {
 	}
 }
 
-// func TestStrictURL(t *testing.T) {
-// 	opt := &convertOpt{
-// 		enableQueryValueArray: false,
-// 		enableStrictURL:       true,
-// 	}
-// 	js := convert("aaa", opt)
-// }
+func TestStrictURL(t *testing.T) {
+	opt := &convertOpt{
+		enableQueryValueArray: false,
+		enableStrictURL:       true,
+	}
+	_, err := convert("aaa", opt)
+	if err == nil {
+		t.Error()
+	}
+}

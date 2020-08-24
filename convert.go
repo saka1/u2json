@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/url"
 	"strconv"
 )
@@ -12,7 +11,7 @@ type convertOpt struct {
 	enableStrictURL       bool
 }
 
-func convert(input string, opt *convertOpt) []byte {
+func convert(input string, opt *convertOpt) ([]byte, error) {
 	var u *url.URL
 	var err error
 	if opt.enableStrictURL {
@@ -21,7 +20,7 @@ func convert(input string, opt *convertOpt) []byte {
 		u, err = url.Parse(input)
 	}
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	result := map[string]interface{}{}
 	// scheme
@@ -47,7 +46,7 @@ func convert(input string, opt *convertOpt) []byte {
 	if u.Port() != "" {
 		port, err := strconv.Atoi(u.Port())
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		result["port"] = port
 	}
@@ -78,7 +77,7 @@ func convert(input string, opt *convertOpt) []byte {
 
 	bin, err := json.Marshal(&result)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return bin
+	return bin, nil
 }

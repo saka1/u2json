@@ -17,7 +17,12 @@ func main() {
 		Short: "Convert URL to JSON",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Print(string(convert(args[0], &convertOpt)))
+			js, err := convert(args[0], &convertOpt)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			fmt.Print(string(js))
 		},
 	}
 
