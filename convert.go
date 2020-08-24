@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strconv"
 )
@@ -20,7 +21,7 @@ func convert(input string, opt *convertOpt) ([]byte, error) {
 		u, err = url.Parse(input)
 	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Fail to parse as URL: %s", err)
 	}
 	result := map[string]interface{}{}
 	// scheme
@@ -46,7 +47,7 @@ func convert(input string, opt *convertOpt) ([]byte, error) {
 	if u.Port() != "" {
 		port, err := strconv.Atoi(u.Port())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Fail to parse port: %s", err)
 		}
 		result["port"] = port
 	}
@@ -77,7 +78,7 @@ func convert(input string, opt *convertOpt) ([]byte, error) {
 
 	bin, err := json.Marshal(&result)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Fail to marshal to JSON: %s", err)
 	}
 	return bin, nil
 }
