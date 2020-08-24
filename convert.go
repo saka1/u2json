@@ -58,8 +58,6 @@ func convert(input string, opt *convertOpt) []byte {
 	// query
 	if u.RawQuery != "" {
 		result["rawQuery"] = u.RawQuery
-	}
-	if u.RawQuery != "" {
 		if opt.enableQueryValueArray {
 			result["query"] = u.Query()
 		} else {
