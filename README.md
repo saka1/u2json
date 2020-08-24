@@ -12,7 +12,7 @@ $ u2json 'https://example.com:80/foo/bar'
 
 ### Full example
 
-Pretty print with [jq](https://stedolan.github.io/jq/).
+Pretty-print with [jq](https://stedolan.github.io/jq/).
 
 ```shell
 $ u2json 'https://usr:pass@example.com:8080/foo/bar?q=v#fr' | jq '.'
