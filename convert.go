@@ -7,8 +7,19 @@ import (
 	"strconv"
 )
 
-func convert(input string) []byte {
-	u, err := url.Parse(input)
+type convertOpt struct {
+	enableQueryValueArray bool
+	enableStrictURL       bool
+}
+
+func convert(input string, opt *convertOpt) []byte {
+	var u *url.URL
+	var err error
+	if opt.enableStrictURL {
+		u, err = url.ParseRequestURI(input)
+	} else {
+		u, err = url.Parse(input)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,14 +60,18 @@ func convert(input string) []byte {
 		result["rawQuery"] = u.RawQuery
 	}
 	if u.RawQuery != "" {
-		queryKv := map[string]string{}
-		for k, v := range u.Query() {
-			// Last key wins in current implementation
-			// But another strategy may be useful
-			// SEE: https://stackoverflow.com/a/1746566
-			queryKv[k] = v[len(v)-1]
+		if opt.enableQueryValueArray {
+			result["query"] = u.Query()
+		} else {
+			queryKv := map[string]string{}
+			for k, v := range u.Query() {
+				// Last key wins if enableQueryValueArray is false
+				// But another strategy may be useful
+				// SEE: https://stackoverflow.com/a/1746566
+				queryKv[k] = v[len(v)-1]
+			}
+			result["query"] = queryKv
 		}
-		result["query"] = queryKv
 	}
 	// fragment
 	if u.Fragment != "" {

@@ -5,8 +5,13 @@ import (
 	"testing"
 )
 
+var opt = &convertOpt{
+	enableQueryValueArray: false,
+	enableStrictURL:       false,
+}
+
 func TestBasic(t *testing.T) {
-	js := convert("https://example.com:80/foo/bar?q1=v1&q2=v2&q3&q2=v3#fr")
+	js := convert("https://example.com:80/foo/bar?q1=v1&q2=v2&q3&q2=v3#fr", opt)
 	var dat map[string]interface{}
 	err := json.Unmarshal(js, &dat)
 	if err != nil {
@@ -46,7 +51,7 @@ func TestBasic(t *testing.T) {
 }
 
 func TestSimpleUrl(t *testing.T) {
-	js := convert("https://example.com/")
+	js := convert("https://example.com/", opt)
 	var dat map[string]interface{}
 	err := json.Unmarshal(js, &dat)
 	if err != nil {
@@ -62,7 +67,7 @@ func TestSimpleUrl(t *testing.T) {
 }
 
 func TestLargePort(t *testing.T) {
-	js := convert("https://example.com:65536")
+	js := convert("https://example.com:65536", opt)
 	var dat map[string]interface{}
 	json.Unmarshal(js, &dat)
 	t.Logf("%v", dat)
@@ -72,7 +77,7 @@ func TestLargePort(t *testing.T) {
 }
 
 func TestUserPassword(t *testing.T) {
-	js := convert("https://u:pass@example.com")
+	js := convert("https://u:pass@example.com", opt)
 	var dat map[string]interface{}
 	json.Unmarshal(js, &dat)
 	t.Logf("%v", dat)
@@ -83,3 +88,34 @@ func TestUserPassword(t *testing.T) {
 		t.Error(dat["password"])
 	}
 }
+
+func TestQueryArray(t *testing.T) {
+	opt := &convertOpt{
+		enableQueryValueArray: true,
+		enableStrictURL:       false,
+	}
+	js := convert("https://example.com?q1=v1&q2=v2&q3&q2=v3", opt)
+	var dat map[string]interface{}
+	json.Unmarshal(js, &dat)
+	params := dat["query"].(map[string]interface{})
+	q1 := params["q1"].([]interface{})
+	if q1[0].(string) != "v1" || len(q1) != 1 {
+		t.Error(q1)
+	}
+	q2 := params["q2"].([]interface{})
+	if q2[0].(string) != "v2" || q2[1].(string) != "v3" || len(q2) != 2 {
+		t.Error(q2)
+	}
+	q3 := params["q3"].([]interface{})
+	if q3[0].(string) != "" || len(q3) != 1 {
+		t.Error(q3)
+	}
+}
+
+// func TestStrictURL(t *testing.T) {
+// 	opt := &convertOpt{
+// 		enableQueryValueArray: false,
+// 		enableStrictURL:       true,
+// 	}
+// 	js := convert("aaa", opt)
+// }
