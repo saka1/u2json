@@ -17,18 +17,25 @@ func main() {
 		Short: "Convert URL to JSON",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			bin, err := convert(args[0], &convertOpt)
-			if err != nil {
-				fmt.Println(err)
+			errorFound := false
+			for _, url := range args {
+				bin, err := convert(url, &convertOpt)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "u2json: %s\n", err)
+					errorFound = true
+					continue
+				}
+				fmt.Println(string(bin))
+			}
+			if errorFound {
 				os.Exit(1)
 			}
-			fmt.Print(string(bin))
 		},
 	}
 
 	rootCmd.Flags().BoolVarP(
 		&convertOpt.enableQueryValueArray,
-		"query-array", "", false, "Parse duplicated query params as array",
+		"query-array", "", false, "Parse multiple query params as array",
 	)
 	rootCmd.Flags().BoolVarP(
 		&convertOpt.enableStrictURL,
