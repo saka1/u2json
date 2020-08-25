@@ -1,7 +1,7 @@
 # u2json
 ![Go](https://github.com/saka1/u2json/workflows/Go/badge.svg)
 
-A Command-line Utility to convert URL to JSON containing each parts.
+A Command-line utility to convert URL to JSON containing each parts.
 
 ```shell
 $ u2json 'https://example.com:80/foo/bar'
@@ -31,28 +31,28 @@ $ u2json 'https://usr:pass@example.com:8080/foo/bar?q=v#fr' | jq '.'
 }
 ```
 
-### As JSON streamins
+### As JSON streaming
 
 u2json supports multiple arguments.
 This output format is known as [JSON streaming](https://en.wikipedia.org/wiki/JSON_streaming).
 
 ```shell
 $ cat url.txt
-https://example2.com/aaa
-https://example2.com/bbb
-https://example1.com/xxx
-$ cat url.txt | xargs ./u2json
-{"host":"example2.com","path":"/aaa","scheme":"https"}
-{"host":"example2.com","path":"/bbb","scheme":"https"}
-{"host":"example1.com","path":"/xxx","scheme":"https"}
+https://a.example.com/aaa
+https://b.example.com/bbb
+https://a.example.com/ccc
+$ cat url.txt | xargs u2json
+{"host":"a.example.com","path":"/aaa","scheme":"https"}
+{"host":"b.example.com","path":"/bbb","scheme":"https"}
+{"host":"a.example.com","path":"/ccc","scheme":"https"}
 ```
 
 It works well with the other CLI commands.
 
 ```shell
-$ cat url.txt | xargs ./u2json | jq -r '.host' | sort -u
-example1.com
-example2.com
+$ cat url.txt | xargs u2json | jq -r '.host' | sort -u
+a.example.com
+b.example.com
 ```
 
 ### Multiple values in query parameters
