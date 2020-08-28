@@ -9,19 +9,19 @@ import (
 
 type convertOpt struct {
 	enableQueryValueArray bool
-	enableStrictURL       bool
+	useParseRequestURI    bool
 }
 
 func convert(input string, opt *convertOpt) ([]byte, error) {
 	var u *url.URL
 	var err error
-	if opt.enableStrictURL {
+	if opt.useParseRequestURI {
 		u, err = url.ParseRequestURI(input)
 	} else {
 		u, err = url.Parse(input)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("Fail to parse as URL: %s", err)
+		return nil, err
 	}
 	result := map[string]interface{}{}
 	// scheme
