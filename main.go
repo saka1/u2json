@@ -7,10 +7,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func main() {
+func createRootCmd() *cobra.Command {
 	convertOpt := convertOpt{
 		enableQueryValueArray: false,
-		enableStrictURL:       false,
+		useParseRequestURI:    false,
 	}
 	var rootCmd = &cobra.Command{
 		Use:   "u2json",
@@ -38,11 +38,16 @@ func main() {
 		"query-array", "", false, "Parse multiple query params as array",
 	)
 	rootCmd.Flags().BoolVarP(
-		&convertOpt.enableStrictURL,
-		"strict-url", "", false, "Check the input is URL",
+		&convertOpt.useParseRequestURI,
+		"use-ParseRequestURI", "", false, "Check the input with url.ParseRequestURI()",
 	)
+	return rootCmd
+}
+
+func main() {
+	rootCmd := createRootCmd()
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }

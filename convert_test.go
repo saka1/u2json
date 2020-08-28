@@ -7,7 +7,7 @@ import (
 
 var opt = &convertOpt{
 	enableQueryValueArray: false,
-	enableStrictURL:       false,
+	useParseRequestURI:    false,
 }
 
 func TestBasic(t *testing.T) {
@@ -85,7 +85,7 @@ func TestUserPassword(t *testing.T) {
 func TestQueryArray(t *testing.T) {
 	opt := &convertOpt{
 		enableQueryValueArray: true,
-		enableStrictURL:       false,
+		useParseRequestURI:    false,
 	}
 	js, err := convert("https://example.com?q1=v1&q2=v2&q3&q2=v3", opt)
 	if err != nil {
@@ -111,7 +111,7 @@ func TestQueryArray(t *testing.T) {
 func TestStrictURL(t *testing.T) {
 	opt := &convertOpt{
 		enableQueryValueArray: false,
-		enableStrictURL:       true,
+		useParseRequestURI:    true,
 	}
 	_, err := convert("aaa", opt)
 	if err == nil {
