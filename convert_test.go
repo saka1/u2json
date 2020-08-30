@@ -59,7 +59,9 @@ func TestLargePort(t *testing.T) {
 		t.Error(err)
 	}
 	var dat map[string]interface{}
-	json.Unmarshal(js, &dat)
+	if err := json.Unmarshal(js, &dat); err != nil {
+		t.Error(err)
+	}
 	t.Logf("%v", dat)
 	if dat["port"].(float64) != 65536 {
 		t.Error(dat["port"])
@@ -72,7 +74,9 @@ func TestUserPassword(t *testing.T) {
 		t.Error(err)
 	}
 	var dat map[string]interface{}
-	json.Unmarshal(js, &dat)
+	if err := json.Unmarshal(js, &dat); err != nil {
+		t.Error(err)
+	}
 	t.Logf("%v", dat)
 	if dat["user"] != "u" {
 		t.Error(dat["user"])
@@ -92,7 +96,9 @@ func TestQueryArray(t *testing.T) {
 		t.Error(err)
 	}
 	var dat map[string]interface{}
-	json.Unmarshal(js, &dat)
+	if err := json.Unmarshal(js, &dat); err != nil {
+		t.Error(err)
+	}
 	params := dat["query"].(map[string]interface{})
 	q1 := params["q1"].([]interface{})
 	if q1[0].(string) != "v1" || len(q1) != 1 {
