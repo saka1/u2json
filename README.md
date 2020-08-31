@@ -1,5 +1,7 @@
 # u2json
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Go](https://github.com/saka1/u2json/workflows/Go/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/saka1/u2json)](https://goreportcard.com/report/github.com/saka1/u2json)
 
 A Command-line utility to convert URL to JSON containing each parts.
 
@@ -85,3 +87,17 @@ $ u2json --query-array 'http://example.com?q=v1&q=v2' | jq '.'
   "scheme": "http"
 }
 ```
+
+### Use ParseRequestURI
+
+u2json uses `url.Parse()` as default URL parser.
+It accepts fairly forgiving input. For example, "../aaa" is recognized as a valid URI.
+
+But in some cases, we need more "strict" URL parsing.
+u2json with `--use-ParseRequestURI` switches parser to `url.ParseRequestURI()`, which forbidden some formats like a relative URL.
+
+```shell
+$ u2json --use-ParseRequestURI '../aaa'
+u2json: parse "../aaa": invalid URI for request
+```
+
