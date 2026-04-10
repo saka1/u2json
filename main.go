@@ -1,53 +1,45 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"io"
 	"os"
-
-	"github.com/spf13/cobra"
 )
 
-func createRootCmd() *cobra.Command {
-	convertOpt := convertOpt{
-		enableQueryValueArray: false,
-		useParseRequestURI:    false,
-	}
-	var rootCmd = &cobra.Command{
-		Use:   "u2json",
-		Short: "Convert URL to JSON",
-		Args:  cobra.MinimumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			errorFound := false
-			for _, url := range args {
-				bin, err := convert(url, &convertOpt)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "u2json: %s\n", err)
-					errorFound = true
-					continue
-				}
-				fmt.Println(string(bin))
-			}
-			if errorFound {
-				os.Exit(1)
-			}
-		},
+func run(args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("u2json", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	queryArray := fs.Bool("query-array", false, "Parse multiple query params as array")
+	useParseRequestURI := fs.Bool("use-ParseRequestURI", false, "Check the input with url.ParseRequestURI()")
+	if err := fs.Parse(args); err != nil {
+		return 1
 	}
 
-	rootCmd.Flags().BoolVarP(
-		&convertOpt.enableQueryValueArray,
-		"query-array", "", false, "Parse multiple query params as array",
-	)
-	rootCmd.Flags().BoolVarP(
-		&convertOpt.useParseRequestURI,
-		"use-ParseRequestURI", "", false, "Check the input with url.ParseRequestURI()",
-	)
-	return rootCmd
+	urls := fs.Args()
+	if len(urls) == 0 {
+		_, _ = fmt.Fprintln(stderr, "usage: u2json [flags] URL...")
+		return 1
+	}
+
+	opt := &convertOpt{
+		enableQueryValueArray: *queryArray,
+		useParseRequestURI:    *useParseRequestURI,
+	}
+
+	exitCode := 0
+	for _, url := range urls {
+		bin, err := convert(url, opt)
+		if err != nil {
+			_, _ = fmt.Fprintf(stderr, "u2json: %s\n", err)
+			exitCode = 1
+			continue
+		}
+		_, _ = fmt.Fprintln(stdout, string(bin))
+	}
+	return exitCode
 }
 
 func main() {
-	rootCmd := createRootCmd()
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
+	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
 }
