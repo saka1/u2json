@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-u2json is a Go CLI tool that parses URLs and outputs their components as JSON. It uses Cobra for CLI handling and Go's standard `net/url` for URL parsing.
+u2json is a Go CLI tool that parses URLs and outputs their components as JSON. It uses Go's standard `flag` and `net/url` packages with no external dependencies.
 
 ## Commands
 
@@ -26,7 +26,7 @@ go test -v -run TestBasic .
 
 Single-package (`main`) app with two core files:
 
-- **main.go** - Cobra command setup with two flags: `--query-array` (parse duplicate query params as arrays) and `--use-ParseRequestURI` (strict URI validation)
+- **main.go** - CLI entry point with two flags: `--query-array` (parse duplicate query params as arrays) and `--use-ParseRequestURI` (strict URI validation). The `run()` function takes args/stdout/stderr for testability.
 - **convert.go** - `convert(input string, opt *convertOpt)` parses a URL and returns JSON bytes. The `convertOpt` struct carries flag state. Output is a `urlResult` struct with fields in alphabetical order (matching JSON key order) and `omitempty` tags (port is numeric, not string).
 
-Tests live in `convert_test.go` (unit tests for `convert()`) and `main_test.go` (example test).
+Tests live in `convert_test.go` (unit tests for `convert()`) and `main_test.go` (integration tests for `run()`).
