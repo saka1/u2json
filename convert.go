@@ -12,6 +12,18 @@ type convertOpt struct {
 	useParseRequestURI    bool
 }
 
+type urlResult struct {
+	Fragment string `json:"fragment,omitempty"`
+	Host     string `json:"host,omitempty"`
+	Password string `json:"password,omitempty"`
+	Path     string `json:"path,omitempty"`
+	Port     int    `json:"port,omitempty"`
+	Query    any    `json:"query,omitempty"`
+	RawQuery string `json:"rawQuery,omitempty"`
+	Scheme   string `json:"scheme,omitempty"`
+	User     string `json:"user,omitempty"`
+}
+
 func convert(input string, opt *convertOpt) ([]byte, error) {
 	var u *url.URL
 	var err error
@@ -23,62 +35,48 @@ func convert(input string, opt *convertOpt) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	result := map[string]interface{}{}
-	// scheme
-	if u.Scheme != "" {
-		result["scheme"] = u.Scheme
-	}
-	// user
+
+	result := urlResult{}
+
+	result.Scheme = u.Scheme
+
 	if u.User != nil {
-		usr := u.User
-		if usr.Username() != "" {
-			result["user"] = usr.Username()
-		}
-		password, passwordSet := usr.Password()
-		if passwordSet {
-			result["password"] = password
+		result.User = u.User.Username()
+		if p, ok := u.User.Password(); ok {
+			result.Password = p
 		}
 	}
-	// host
-	if u.Hostname() != "" {
-		result["host"] = u.Hostname()
-	}
-	// port
+
+	result.Host = u.Hostname()
+
 	if u.Port() != "" {
 		port, err := strconv.Atoi(u.Port())
 		if err != nil {
-			return nil, fmt.Errorf("Fail to parse port: %s", err)
+			return nil, fmt.Errorf("fail to parse port: %w", err)
 		}
-		result["port"] = port
+		result.Port = port
 	}
-	// path
-	if u.Path != "" {
-		result["path"] = u.Path
-	}
-	// query
+
+	result.Path = u.Path
+
 	if u.RawQuery != "" {
-		result["rawQuery"] = u.RawQuery
+		result.RawQuery = u.RawQuery
 		if opt.enableQueryValueArray {
-			result["query"] = u.Query()
+			result.Query = u.Query()
 		} else {
 			queryKv := map[string]string{}
 			for k, v := range u.Query() {
-				// Last key wins if enableQueryValueArray is false
-				// But another strategy may be useful
-				// SEE: https://stackoverflow.com/a/1746566
 				queryKv[k] = v[len(v)-1]
 			}
-			result["query"] = queryKv
+			result.Query = queryKv
 		}
 	}
-	// fragment
-	if u.Fragment != "" {
-		result["fragment"] = u.Fragment
-	}
+
+	result.Fragment = u.Fragment
 
 	bin, err := json.Marshal(&result)
 	if err != nil {
-		return nil, fmt.Errorf("Fail to marshal to JSON: %s", err)
+		return nil, fmt.Errorf("fail to marshal to JSON: %w", err)
 	}
 	return bin, nil
 }
